@@ -11,4 +11,5 @@ hd4 = pd.Series({'weight': 0.55, 'people flow/bus': 30, 'people flow/time': 7})
 df = pd.DataFrame([hd1, hd2, hd3, hd4])
 
 # A, B: Constantes a serem otimizadas pelo algoritmo
-dw = A*(sqrt(abs(dpdt - Mdpdt))) - B*(sqrt(abs(dpdb - Mdpdb)))
+dw = 0.3*(sqrt(abs(dpdt - Mdpdt))) - 0.1*(sqrt(abs(dpdb - Mdpdb)))
+
