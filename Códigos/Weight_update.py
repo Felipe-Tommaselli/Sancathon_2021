@@ -3,7 +3,6 @@ import pandas as pd
 from tensorflow import *
 import numpy as np
 
-'''
 class NeuralNetwork():
     def __init__(self, learning_rate):
         # gerando pesos aleatórios de acordo com uma distribuição normal em uma matriz 
@@ -56,25 +55,45 @@ class NeuralNetwork():
                     error = np.square(prediction - target_prediction)
                     cumulative_error += error
                 cumulative_errors.append(cumulative_error)
-'''
+
+
+def Weight_update(weight, dpdb, dpdt, Mdpdb, Mdpdt):
+    ''' dq atualiza os pesos, de forma seuir uma funcao que modela o quao cogestionada esta
+    a linha no momento, o fluxo de pessos por onibus é um indicativo de que os onibus estão 
+    saindo e cheios e provavelmente a rede esta sobrecarregado quando esse indicador esta alto,
+    o oposto se espera do fluxo de pessos por tempo, o qual indica uma boa vazão de pessoas,
+    alem disso foram balanceadas as grandezas por meio de constantes, e uma funcao raiz quadrada
+    foi aplicada para atenuar feios OUTLIERS, ou seja, dados muito destoantes'''
+
+    return 0.3*(sqrt(abs(dpdt - Mdpdt))) - 0.1*(sqrt(abs(dpdb - Mdpdb)))
+
 
 def main():
+    
+    # Criando tabela exemplo
+    hd1 = {'weight': 0.4, 'people flow/bus': 40, 'people flow/time': 10, 'average people flow/bus': 26.57, 'average people flow/time': 12.11}
+    hd2 = {'weight': 0.5, 'people flow/bus': 35, 'people flow/time': 36, 'average people flow/bus': 36.28, 'average people flow/time': 11.95}
+    hd3 = {'weight': 0.6, 'people flow/bus': 10, 'people flow/time': 9, 'average people flow/bus': 10.55, 'average people flow/time': 13.40}
+    hd4 = {'weight': 0.55, 'people flow/bus': 30, 'people flow/time': 7, 'average people flow/bus': 16.40, 'average people flow/time': 17.87}
+    
+    dia_10_09_2021 = [hd1, hd2, hd3, hd4]
+
+    dw = Weight_update(hd1['weight'], hd1['people flow/bus'], hd1['people flow/time'], hd1[Mdpdb], hd1[Mdpdt])
+
+    hd1['weight'] = hd1['weight'] + dw
+    
+    
     model = keras.Sequential([
         tf.keras.layers.RNN(cell, return_sequences = False, return_state = False, go_backward = False,
         stateful = False, unroll = False, time_major = False, **kwargs)
 
     ])
 
-# Criando tabela
-hd1 = pd.Series({'weight': 0.4, 'people flow/bus': 40, 'people flow/time': 10})
-hd2 = pd.Series({'weight': 0.5, 'people flow/bus': 35, 'people flow/time': 36})
-hd3 = pd.Series({'weight': 0.6, 'people flow/bus': 10, 'people flow/time': 9})
-hd4 = pd.Series({'weight': 0.55, 'people flow/bus': 30, 'people flow/time': 7})
 
-df = pd.DataFrame([hd1, hd2, hd3, hd4])
+
+
 
 # A, B: Constantes a serem otimizadas pelo algoritmo
-dw = 0.3*(sqrt(abs(dpdt - Mdpdt))) - 0.1*(sqrt(abs(dpdb - Mdpdb)))
 
 ''' aqui a ideia é atualiar o peso de uma certa linha ao longo do HD (horarios do dia),
 só precisa ver se realmente a funcao ta fncionando suave pra atualizar os pesos, 
