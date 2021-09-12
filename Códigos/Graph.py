@@ -1,86 +1,110 @@
+''' Conjunto de códigos desenvolvidos para o Sancathon 2021
+                                > GRABus <
+* Código de controle do tráfego:
+        O objetivo do desenvolvimento desse código em python é gerar grafos
+    representando os pontos de ônibus e as linhas que ligam um ao outro.
+    É válido lembrar que todos os códigos do projeto são versões betas que
+    podem ser aperfeiçoados e mais explorados em outros escopos fora do Sancathon.
+        Os grafos tem o objetivo de auxiliar na visualização da atual situação dos
+    ônibus, levando em conta o fluxo de pessoas por ônibus e a cada período de tempo,
+    representados pelas diferentes cores de arestas nos grafos.
+'''
+
+
 # Imports
 import pandas as pd
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 
-# Test function
 
-def plot_graph(G, weight_name=None):
-    '''
-    G: a networkx G
-    weight_name: name of the attribute for plotting edge weights (if G is weighted)
-    '''
-
-    import matplotlib.pyplot as plt
-
-    plt.figure()
-    pos = nx.spring_layout(G)
-    edges = G.edges()
-    weights = None
-
-    if weight_name:
-        weights = [int(G[u][v][weight_name]) for u, v in edges]
-        labels = nx.get_edge_attributes(G, weight_name)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-        nx.drawing.nx_pylab.draw_networkx(G, pos, edgelist=edges)
-    else:
-        nx.draw_networkx(G, pos, edgelist=edges)
-# Test
-
-# Get edge_list
-G_df = pd.read_csv('Stations_data.csv')
-
-G = nx.from_pandas_edgelist(G_df, 'Station_origin', 'Station_destiny', edge_attr=['Weight'], create_using=nx.DiGraph())
-
-plot_graph(G, 'Weight')
-
-# Real function
-def plot_graph_with_coordinates(G, pos, weight_name=None):
-    '''
-    G: a networkx G
-    weight_name: name of the attribute for plotting edge weights (if G is weighted)
-    '''
-    import matplotlib.pyplot as plt
+def plot_graph_with_coordinates(g, weight_name, pos=None):
 
     plt.figure(figsize=(20, 10))
-    plt.xlim([-0.2, 1.2])
-    plt.ylim([-0.2, 1.2])
-    edges = G.edges()
-    weights = None
 
-    if weight_name:
-        weights = [int(G[u][v][weight_name]) for u, v in edges]
-        labels = nx.get_edge_attributes(G, weight_name)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-        nx.drawing.nx_pylab.draw_networkx(G, pos, edgelist=edges)
+    # Verifica se as coordenadas reais serão utilizadas
+
+    if pos:
+        plt.xlim([-0.2, 1.2])
+        plt.ylim([-0.2, 1.2])
     else:
-        nx.draw_networkx(G, pos, edgelist=edges)
+        pos = nx.spring_layout(g)
 
-# Get edge_list
-df = pd.read_csv('Stations_positions.csv')
-df = df.replace(',','.', regex=True)
-df['Weight'] = pd.to_numeric(df['Weight'])
-df['Latitude'] = pd.to_numeric(df['Latitude'])
-df['Longitude'] = pd.to_numeric(df['Longitude'])
+    edges = g.edges()
+    d = dict(g.degree)
 
-G_df = df.drop(['Latitude', 'Longitude'], axis=1)
+    options = {
+        "node_color": "#A0CBE2",
+        "width": 2,
+        "with_labels": True,
+    }
 
-pos_lat = df['Latitude'].to_list()
-pos_long = df['Longitude'].to_list()
+    weights = [g[u][v][weight_name] for u, v in edges]
+    colors = []
+    for w in weights:
+        if w <= 0.3:
+            colors.append("green")
+        elif w > 0.3 and w <= 0.7:
+            colors.append("#FFCC00")
+        else:
+            colors.append("red")
 
-# Normalizing the coordinates
-max_lat = max(pos_lat)
-min_lat = min(pos_lat)
-max_long = max(pos_long)
-min_long = min(pos_long)
+    # Desenha o grafo
+    nx.draw(g, pos, nodelist=list(d.keys()),
+            node_size=[v * 500 for v in d.values()], edge_color=colors, **options)
 
-pos_lat_norm = [(x - min_lat)/(max_lat - min_lat) for x in pos_lat]
-pos_long_norm = [(x - min_long)/(max_long - min_long) for x in pos_long]
+    plt.show()
 
-stations = df['Station_origin']
 
-pos = dict(zip(stations, zip(pos_lat_norm, pos_long_norm)))
+def main():
 
-G = nx.from_pandas_edgelist(G_df, 'Station_origin', 'Station_destiny', edge_attr=['Weight'], create_using=nx.DiGraph())
+    # Exemplo
+    d_location = {'Stations': ['1','2','3','4','5','6','7'] ,
+        'Latitude':[0.320687, 0.369927, 0.014087, 0.299441, 0.068567, 0.161801, 0.084923] ,
+        'Longitude':[0.504865, 0.250951, 0.589596, 0.057862, 0.248278, 0.690536, 0.476913]
+        }
 
-plot_graph_with_coordinates(G, pos, 'Weight')
+    d_weight = {'Station_origin': ['1','2','3','4','5','6','4','2','3','7','5'] ,
+        'Station_destiny':['2','3','1','1','1','3','7','5','4','5','6'] ,
+        'Weight':list(np.random.random(11))
+        }
+
+    location_df = pd.DataFrame.from_dict(d_location)
+    weight_df = pd.DataFrame.from_dict(d_weight)
+
+    # Get edge_list
+    #df = pd.read_csv('Stations_positions.csv')
+    #df = df.replace(',','.', regex=True)
+
+    # Converte as strings para valores numéricos
+    weight_df['Weight'] = pd.to_numeric(weight_df['Weight'])
+    location_df['Latitude'] = pd.to_numeric(location_df['Latitude'])
+    location_df['Longitude'] = pd.to_numeric(location_df['Longitude'])
+
+    g_df = weight_df
+
+    pos_lat = location_df['Latitude'].to_list()
+    pos_long = location_df['Longitude'].to_list()
+
+    # Normaliza as coordenadas
+    max_lat = max(pos_lat)
+    min_lat = min(pos_lat)
+    max_long = max(pos_long)
+    min_long = min(pos_long)
+
+    pos_lat_norm = [(x-min_lat)/(max_lat-min_lat) for x in pos_lat]
+    pos_long_norm = [(x-min_long)/(max_long-min_long) for x in pos_long]
+
+    stations = location_df['Stations']
+
+    pos = dict(zip(stations, zip(pos_lat_norm, pos_long_norm)))
+
+    # Cria o grafo
+    g = nx.from_pandas_edgelist(g_df, 'Station_origin', 'Station_destiny', edge_attr=['Weight'], create_using=nx.DiGraph())
+
+    plot_graph_with_coordinates(g, 'Weight', pos)
+
+
+# Executa a função main
+if __name__ == '__main__':
+    main()

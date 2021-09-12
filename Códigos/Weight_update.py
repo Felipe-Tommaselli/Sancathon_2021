@@ -1,3 +1,7 @@
+''' Conjunto de códigos desenvolvidos para o Sancathon 2021
+                                > GRABus < 
+'''
+
 # Imports
 import pandas as pd
 from tensorflow import *
@@ -86,7 +90,6 @@ def main():
     model = keras.Sequential([
         tf.keras.layers.RNN(cell, return_sequences = False, return_state = False, go_backward = False,
         stateful = False, unroll = False, time_major = False, **kwargs)
-
     ])
 
 
