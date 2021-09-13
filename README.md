@@ -54,4 +54,4 @@ Para visualizar a análise de dados produzida pelo algoritmo foi desenvolvido um
 
 ---
 
-Desenvolvido por [Felipe Tommaselli](https://github.com/Felipe-Tommaselli), [Francisco Affonso](), [João Kucas Foltran](https://github.com/jonny31415), [Ricardo Yudi Takahashi]()
+Desenvolvido por [Felipe Tommaselli](https://github.com/Felipe-Tommaselli), [Francisco Affonso](), [Gianluca Capezzuto Sardinha](https://github.com/gianvstheworld), [João Kucas Foltran](https://github.com/jonny31415), [Ricardo Yudi Takahashi]()
